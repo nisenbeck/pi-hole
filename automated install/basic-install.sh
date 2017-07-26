@@ -1059,7 +1059,7 @@ finalExports() {
   source "${PI_HOLE_LOCAL_REPO}/advanced/Scripts/webpage.sh"
 
   #if [[ "${DNS_FQDN_REQUIRED}" != "" ]] ; then
-    ProcessDNSSettings
+    #ProcessDNSSettings
   #fi
 
   #if [[ "${DHCP_ACTIVE}" != "" ]] ; then
