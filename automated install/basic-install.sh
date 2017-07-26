@@ -1058,13 +1058,13 @@ finalExports() {
   source "${setupVars}"
   source "${PI_HOLE_LOCAL_REPO}/advanced/Scripts/webpage.sh"
 
-  if [[ "${DNS_FQDN_REQUIRED}" != "" ]] ; then
+  #if [[ "${DNS_FQDN_REQUIRED}" != "" ]] ; then
     ProcessDNSSettings
-  fi
+  #fi
 
-  if [[ "${DHCP_ACTIVE}" != "" ]] ; then
+  #if [[ "${DHCP_ACTIVE}" != "" ]] ; then
     ProcessDHCPSettings
-  fi
+  #fi
 }
 
 installLogrotate() {
