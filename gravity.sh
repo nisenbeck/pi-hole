@@ -26,10 +26,10 @@ EOM
 	exit 0
 }
 
-PIHOLE_COMMAND="/usr/local/bin/pihole"
+PIHOLE_COMMAND="/bin/true"
 basename=pihole
-piholeDir=/etc/${basename}
-piholeFilesDir="/etc/.pihole"
+piholeDir=${TMP_DIR}
+piholeFilesDir="."
 
 adListFile=${piholeDir}/adlists.list
 adListDefault=${piholeDir}/adlists.default #being deprecated

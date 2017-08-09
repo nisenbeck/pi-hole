@@ -1,0 +1,93 @@
+#!/bin/bash
+
+#----------------------------------------------------#
+# pihole-minimal                                     #
+#----------------------------------------------------#
+# This script generates a simple config file for gravity.sh (setupVars.conf)
+# and then runs gravity.sh to create the gravity.list for dnsmasq.
+#
+# That's it! Nothing more, nothing less.
+#
+# How to use this list? Your problem!
+# If you want an all-inclusive solution, use the original project
+#----------------------------------------------------#
+
+# default working dir is ./tmp
+TMP_DIR="tmp"
+
+# configfile
+setupVars=setupVars.conf
+
+# ip validator (IPv4)
+function valid_ip() {
+    local  ip=$1
+    local  stat=1
+
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip=($ip)
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+            && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        stat=$?
+    fi
+    return $stat
+}
+
+# if configfile does not exist, create it
+if [[ ! -f ${setupVars} ]];then
+	echo -e -n "
+---------------------------------------------------------------------------------
+\033[0;31mpihole-minimal is unconfigured. Please enter some basic config information\033[0m
+---------------------------------------------------------------------------------
+"
+	read -e -p "Enter IPv4: " -i "127.0.0.1" IPV4_ADDRESS
+	echo "IPV4_ADDRESS=${IPV4_ADDRESS}" >> ${setupVars}
+
+	read -e -p "Enter IPv6 (leave blank if none): " -i "" IPV6_ADDRESS
+        echo "IPV6_ADDRESS=${IPV6_ADDRESS}" >> ${setupVars}
+
+        read -e -p "Enter dnsmasq interface: " -i "eth0" PIHOLE_INTERFACE
+        echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}" >> ${setupVars}
+
+        read -e -p "Enter destination directory: " -i "/etc" DESTINATION_DIR
+        echo "DESTINATION_DIR=${DESTINATION_DIR}" >> ${setupVars}
+
+	echo "TMP_DIR=${TMP_DIR}" >> ${setupVars}
+else
+	# ...otherwise source config variables
+	. ${setupVars}
+fi
+
+# create directories
+mkdir -p ${TMP_DIR} 2>/dev/null
+mkdir -p ${DESTINATION_DIR}
+
+# validate ip
+if ! valid_ip ${IPV4_ADDRESS}; then
+	echo "Error: Invalid IPv4 address: ${IPV4_ADDRESS}"
+	exit 1
+fi
+# check working dir
+if [[ ! -w ${TMP_DIR} ]]; then
+        echo "Error: tmp directory not writable: ${TMP_DIR}"
+        exit 1
+fi
+# check destination dir
+if ! touch ${DESTINATION_DIR}/gravity.list 2>/dev/null; then
+        echo "Error: Destination file not writable: ${DESTINATION_DIR}/gravity.list"
+        exit 1
+fi
+
+# copy config
+cp ${setupVars} ${TMP_DIR}/setupVars.conf
+
+# run gravity.sh
+. gravity.sh
+
+# copy final list to destination
+cp ${TMP_DIR}/gravity.list ${DESTINATION_DIR}
+
+# tbd
+#read -e -p "May I configure dnsmasq for you?: " -i "no" CONFIG_DNSMASQ
