@@ -27,21 +27,23 @@ EOM
 }
 
 PIHOLE_COMMAND="/usr/local/bin/pihole"
+basename=pihole
+piholeDir=/etc/${basename}
 
-adListFile=/etc/pihole/adlists.list
-adListDefault=/etc/pihole/adlists.default #being deprecated
+adListFile=${piholeDir}/adlists.list
+adListDefault=${piholeDir}/adlists.default #being deprecated
 adListRepoDefault=/etc/.pihole/adlists.default
 whitelistScript="${PIHOLE_COMMAND} -w"
-whitelistFile=/etc/pihole/whitelist.txt
-blacklistFile=/etc/pihole/blacklist.txt
+whitelistFile=${piholeDir}/whitelist.txt
+blacklistFile=${piholeDir}/blacklist.txt
 readonly wildcardlist="/etc/dnsmasq.d/03-pihole-wildcard.conf"
 
 #Source the setupVars from install script for the IP
-setupVars=/etc/pihole/setupVars.conf
+setupVars=${piholeDir}/setupVars.conf
 if [[ -f ${setupVars} ]];then
-	. /etc/pihole/setupVars.conf
+	. ${setupVars}
 else
-	echo "::: WARNING: /etc/pihole/setupVars.conf missing. Possible installation failure."
+	echo "::: WARNING: ${setupVars} missing. Possible installation failure."
 	echo ":::          Please run 'pihole -r', and choose the 'reconfigure' option to reconfigure."
 	exit 1
 fi
@@ -51,8 +53,6 @@ IPV4_ADDRESS=${IPV4_ADDRESS%/*}
 IPV6_ADDRESS=${IPV6_ADDRESS%/*}
 
 # Variables for various stages of downloading and formatting the list
-basename=pihole
-piholeDir=/etc/${basename}
 adList=${piholeDir}/gravity.list
 blackList=${piholeDir}/black.list
 localList=${piholeDir}/local.list
@@ -417,7 +417,7 @@ done
 
 if [[ "${forceGrav}" == true ]]; then
 	echo -n "::: Deleting exising list cache..."
-	rm /etc/pihole/list.*
+	rm ${piholeDir}/list.*
 	echo " done!"
 fi
 
