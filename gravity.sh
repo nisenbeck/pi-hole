@@ -285,6 +285,8 @@ gravity_Whitelist() {
         grep -F -x -v -f ${whitelistFile} ${piholeDir}/${preEventHorizon} > ${piholeDir}/${eventHorizon}
         echo " done!"
 	else
+	    #copy preEventHorizon to eventHorizon
+	    cp ${piholeDir}/${preEventHorizon} ${piholeDir}/${eventHorizon}
 	    echo "::: Nothing to whitelist!"
 	fi
 }
