@@ -29,10 +29,11 @@ EOM
 PIHOLE_COMMAND="/usr/local/bin/pihole"
 basename=pihole
 piholeDir=/etc/${basename}
+piholeFilesDir="/etc/.pihole"
 
 adListFile=${piholeDir}/adlists.list
 adListDefault=${piholeDir}/adlists.default #being deprecated
-adListRepoDefault=/etc/.pihole/adlists.default
+adListRepoDefault=${piholeFilesDir}/adlists.default
 whitelistScript="${PIHOLE_COMMAND} -w"
 whitelistFile=${piholeDir}/whitelist.txt
 blacklistFile=${piholeDir}/blacklist.txt
