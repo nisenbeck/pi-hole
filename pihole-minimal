@@ -52,18 +52,23 @@ if [[ ! -f ${setupVars} ]];then
 	read -e -p "Enter IPv6 (leave blank if none): " -i "" IPV6_ADDRESS
         echo "IPV6_ADDRESS=${IPV6_ADDRESS}" >> ${setupVars}
 
-        read -e -p "Enter dnsmasq interface: " -i "eth0" PIHOLE_INTERFACE
-        echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}" >> ${setupVars}
-
         read -e -p "Enter destination directory: " -i "/etc" DESTINATION_DIR
 	DESTINATION_DIR=$(readlink -f ${DESTINATION_DIR})
 	echo "DESTINATION_DIR=${DESTINATION_DIR}" >> ${setupVars}
 
-	read -e -p "May I configure dnsmasq for you?: " -i "yes" CONFIG_DNSMASQ
+	if [ "$EUID" -ne 0 ]; then {
+		        echo -e -n "
+---------------------------------------------------------------------------------
+\033[0;31m Warning: Not running as root/with sudo. dnsmasq configuration not available\033[0m
+---------------------------------------------------------------------------------
+"
+	} else {
+		read -e -p "May I configure dnsmasq for you?: " -i "yes" CONFIG_DNSMASQ
 
-	if [ "$CONFIG_DNSMASQ" = "yes" ]; then {
-		read -e -p "Enter dnsmasq interface: " -i "eth0" PIHOLE_INTERFACE
-		echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}" >> ${setupVars}
+		if [ "$CONFIG_DNSMASQ" = "yes" ]; then {
+			read -e -p "Enter dnsmasq interface: " -i "eth0" PIHOLE_INTERFACE
+			echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}" >> ${setupVars}
+		} fi
 	} fi
 
 	echo "TMP_DIR=${TMP_DIR}" >> ${setupVars}
@@ -123,7 +128,9 @@ if [ "$CONFIG_DNSMASQ" = "yes" ]; then {
 
        # copy config to /etc/dnsmasq.d/
        cp  ${TMP_DIR}/01-pihole.conf /etc/dnsmasq.d/
+} fi
 
+if [ "$PIHOLE_INTERFACE" != "" ]; then {
        # restart dnsmasq
        /etc/init.d/dnsmasq restart
 } fi
