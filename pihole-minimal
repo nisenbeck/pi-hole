@@ -15,6 +15,10 @@
 # default working dir is ./tmp
 TMP_DIR="tmp"
 
+# default DNS servers
+DNS1="8.8.8.8"
+DNS2="8.8.4.4"
+
 # configfile
 setupVars=setupVars.conf
 
@@ -52,7 +56,15 @@ if [[ ! -f ${setupVars} ]];then
         echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}" >> ${setupVars}
 
         read -e -p "Enter destination directory: " -i "/etc" DESTINATION_DIR
-        echo "DESTINATION_DIR=${DESTINATION_DIR}" >> ${setupVars}
+	DESTINATION_DIR=$(readlink -f ${DESTINATION_DIR})
+	echo "DESTINATION_DIR=${DESTINATION_DIR}" >> ${setupVars}
+
+	read -e -p "May I configure dnsmasq for you?: " -i "yes" CONFIG_DNSMASQ
+
+	if [ "$CONFIG_DNSMASQ" = "yes" ]; then {
+		read -e -p "Enter dnsmasq interface: " -i "eth0" PIHOLE_INTERFACE
+		echo "PIHOLE_INTERFACE=${PIHOLE_INTERFACE}" >> ${setupVars}
+	} fi
 
 	echo "TMP_DIR=${TMP_DIR}" >> ${setupVars}
 else
@@ -89,5 +101,29 @@ cp ${setupVars} ${TMP_DIR}/setupVars.conf
 # copy final list to destination
 cp ${TMP_DIR}/gravity.list ${DESTINATION_DIR}
 
-# tbd
-#read -e -p "May I configure dnsmasq for you?: " -i "no" CONFIG_DNSMASQ
+if [ "$CONFIG_DNSMASQ" = "yes" ]; then {
+
+       # escape destination dir
+       DESTINATION_DIR_ESCAPED=$(echo $DESTINATION_DIR | sed 's/\//\\\//g')
+
+       # check if dnsmasq is already installed
+       if ! [ $(which dnsmasq) ];
+       then
+               apt-get install -y dnsmasq
+       fi
+
+       # prepare config
+       cp advanced/01-pihole.conf ${TMP_DIR}
+       sed -i "s/@DNS1@/${DNS1}/g" ${TMP_DIR}/01-pihole.conf
+       sed -i "s/@DNS2@/${DNS2}/g" ${TMP_DIR}/01-pihole.conf
+       sed -i "s/@INT@/${PIHOLE_INTERFACE}/g" ${TMP_DIR}/01-pihole.conf
+       sed -i "s/addn-hosts=\/etc\/pihole\/gravity.list/addn-hosts=${DESTINATION_DIR_ESCAPED}\/gravity.list/g" ${TMP_DIR}/01-pihole.conf
+       sed -i "/addn-hosts=\/etc\/pihole\/local.list/d" ${TMP_DIR}/01-pihole.conf
+       sed -i "/addn-hosts=\/etc\/pihole\/black.list/d" ${TMP_DIR}/01-pihole.conf
+
+       # copy config to /etc/dnsmasq.d/
+       cp  ${TMP_DIR}/01-pihole.conf /etc/dnsmasq.d/
+
+       # restart dnsmasq
+       /etc/init.d/dnsmasq restart
+} fi
