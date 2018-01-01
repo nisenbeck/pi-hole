@@ -49,7 +49,7 @@ if [[ ! -f ${setupVars} ]];then
 	read -e -p "Enter IPv4: " -i "127.0.0.1" IPV4_ADDRESS
 	echo "IPV4_ADDRESS=${IPV4_ADDRESS}" >> ${setupVars}
 
-	read -e -p "Enter IPv6 (leave blank if none): " -i "" IPV6_ADDRESS
+	read -e -p "Enter IPv6: " -i "::1" IPV6_ADDRESS
         echo "IPV6_ADDRESS=${IPV6_ADDRESS}" >> ${setupVars}
 
         read -e -p "Enter destination directory: " -i "/etc" DESTINATION_DIR
